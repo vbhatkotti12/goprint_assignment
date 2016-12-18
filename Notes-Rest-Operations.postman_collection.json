@@ -1,0 +1,161 @@
+{
+	"variables": [],
+	"info": {
+		"name": "Notes Rest Operations",
+		"_postman_id": "f99ad4d6-32e6-1449-4d8b-09f5e56a83c6",
+		"description": "",
+		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Get All User Notes",
+			"request": {
+				"url": "http://localhost:8080/goprint-web/notes/",
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Basic dGVzdDE6dGVzdDE=",
+						"description": ""
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"description": ""
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\t\t\r\n\t    \"id\":9,\r\n\t    \"title\": \"update note\",\r\n\t\t\"note\": \"Professional1 Update\"\r\n}"
+				},
+				"description": "Get All User Notes"
+			},
+			"response": []
+		},
+		{
+			"name": "Get Note by Id of Authenticated User",
+			"request": {
+				"url": "http://localhost:8080/goprint-web/notes/26",
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Basic dXNlcjJAeW9wbWFpbC5jb206cGFzc3dvcmQyJA==",
+						"description": ""
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"description": ""
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\t\t\r\n\t    \"id\":9,\r\n\t    \"title\": \"update note\",\r\n\t\t\"note\": \"Professional1 Update\"\r\n}"
+				},
+				"description": ""
+			},
+			"response": []
+		},
+		{
+			"name": "Add note of Authenticated User",
+			"request": {
+				"url": "http://localhost:8080/goprint-web/notes",
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Basic dXNlcjJAeW9wbWFpbC5jb206cGFzc3dvcmQyJA==",
+						"description": ""
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"description": ""
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\t\t\r\n\t    \"title\": \"test\",\r\n\t\t\"note\": \"Professional1\"\r\n}"
+				},
+				"description": ""
+			},
+			"response": []
+		},
+		{
+			"name": "Updated note of Authenticated User",
+			"request": {
+				"url": "http://localhost:8080/goprint-web/notes/22",
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Basic dGVzdDp0ZXN0",
+						"description": ""
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"description": ""
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\t\t\r\n\t    \"title\": \"update note\",\r\n\t\t\"note\": \"Professional1 Update\"\r\n}"
+				},
+				"description": ""
+			},
+			"response": []
+		},
+		{
+			"name": "Delete specific note of Authenticated User",
+			"request": {
+				"url": "http://localhost:8080/goprint-web/notes/10",
+				"method": "DELETE",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Basic dGVzdDE6dGVzdDE=",
+						"description": ""
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"description": ""
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\t\t\r\n\t    \"id\":9,\r\n\t    \"title\": \"update note\",\r\n\t\t\"note\": \"Professional1 Update\"\r\n}"
+				},
+				"description": ""
+			},
+			"response": []
+		},
+		{
+			"name": "Delete All User Notes of Authenticated User",
+			"request": {
+				"url": "http://localhost:8080/goprint-web/notes/",
+				"method": "DELETE",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Basic dGVzdDp0ZXN0",
+						"description": ""
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"description": ""
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\t\t\r\n\t    \"id\":9,\r\n\t    \"title\": \"update note\",\r\n\t\t\"note\": \"Professional1 Update\"\r\n}"
+				},
+				"description": ""
+			},
+			"response": []
+		}
+	]
+}
