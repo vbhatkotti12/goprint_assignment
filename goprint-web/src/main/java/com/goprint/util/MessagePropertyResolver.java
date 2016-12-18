@@ -6,7 +6,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.context.MessageSourceAware;
 import org.springframework.stereotype.Component;
-
+/**
+ *  Message Resolver for Resource Bundle 
+ * @author vinod Bhatkotti
+ *
+ */
 @Component
 public class MessagePropertyResolver implements MessageSourceAware{
 	@Autowired

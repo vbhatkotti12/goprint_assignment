@@ -10,7 +10,11 @@ import javax.servlet.http.HttpServletResponse;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.authentication.www.BasicAuthenticationEntryPoint;
 import org.springframework.stereotype.Component;
-
+/**
+ * Custom entry point for HTTP Basic Authentication
+ * @author vinod Bhatkotti
+ *
+ */
 @Component
 public class BasicAuthEntryPoint extends BasicAuthenticationEntryPoint {
 
@@ -24,7 +28,7 @@ public class BasicAuthEntryPoint extends BasicAuthenticationEntryPoint {
 
 	@Override
 	public void afterPropertiesSet() throws Exception {
-		setRealmName("Baeldung");
+		setRealmName("goprint-web");
 		super.afterPropertiesSet();
 	}
 }

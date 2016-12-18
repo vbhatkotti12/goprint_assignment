@@ -1,5 +1,9 @@
 package com.goprint.authentication;
-
+/**
+ * Custom Model for Authenticated User
+ * @author vinod Bhatkotti
+ *
+ */
 public class UserInfo {
 	
 	public UserInfo(Long id,String userName){

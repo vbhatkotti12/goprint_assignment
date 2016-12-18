@@ -13,7 +13,11 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Component;
 import com.goprint.service.UserDetailService;
-
+/**
+ * Custom Authentication Provider for Basic Authentication
+ * @author vinod Bhatkotti
+ *
+ */
 @Component
 public class CustomAutheticationManager implements AuthenticationProvider{
 	

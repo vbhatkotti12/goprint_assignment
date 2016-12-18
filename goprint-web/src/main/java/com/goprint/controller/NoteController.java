@@ -1,6 +1,5 @@
 package com.goprint.controller;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -12,11 +11,7 @@ import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.validation.BindingResult;
-import org.springframework.validation.FieldError;
-import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -26,10 +21,12 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.fasterxml.jackson.annotation.JsonView;
 import com.goprint.authentication.UserInfo;
 import com.goprint.exception.ServiceException;
 import com.goprint.helper.ControllerHelper;
 import com.goprint.model.NoteModel;
+import com.goprint.model.NoteModelView;
 import com.goprint.service.NotesService;
 import com.goprint.util.MessagePropertyResolver;
 /**
@@ -52,7 +49,8 @@ public class NoteController {
 	 * @return
 	 */
 	@GetMapping("/notes")
-	public @ResponseBody ResponseEntity<?> getUserNotes() {
+	
+	public @JsonView(NoteModelView.ViewWithId.class) @ResponseBody ResponseEntity<?> getUserNotes() {
 		Map<String,Object> responseMap = new HashMap<String,Object>();
 		UserInfo userInfo = controllerHelper.getUserDetails();
 		Long userId = controllerHelper.getUserId();
@@ -82,7 +80,7 @@ public class NoteController {
 	 * @return
 	 */
 	@GetMapping("/notes/{id}")
-	public @ResponseBody ResponseEntity<?> getUserNote(@PathVariable Long id) {
+	public @JsonView(NoteModelView.ViewWithId.class) @ResponseBody ResponseEntity<?> getUserNote(@PathVariable Long id) {
 		Map<String,Object> responseMap = new HashMap<String,Object>();
 		UserInfo userInfo = controllerHelper.getUserDetails();
 		Long userId = controllerHelper.getUserId();
@@ -96,7 +94,7 @@ public class NoteController {
 				return new ResponseEntity<Map<String,Object>>(responseMap, HttpStatus.NOT_FOUND);			
 			}
 			responseMap.put(messagePropertyResolver.getMessage("map.key.message", new Object[]{}, Locale.US)
-					, messagePropertyResolver.getMessage("notes.found", new Object[]{}, Locale.US));
+					, messagePropertyResolver.getMessage("notes.idfound", new Object[]{}, Locale.US));
 			responseMap.put(messagePropertyResolver.getMessage("map.key.data", new Object[]{}, Locale.US)
 					, note);
 			return new ResponseEntity<Map<String,Object>>(responseMap, HttpStatus.OK);
@@ -115,7 +113,7 @@ public class NoteController {
 	 * @return
 	 */
 	@DeleteMapping("/notes/{id}")
-	public ResponseEntity<?> deleteNote(@PathVariable Long id) {
+	public @ResponseBody ResponseEntity<?> deleteNote(@PathVariable Long id) {
 		Map<String,Object> responseMap = new HashMap<String,Object>();
 		UserInfo userInfo = controllerHelper.getUserDetails();
 		Long userId = controllerHelper.getUserId();
@@ -179,7 +177,8 @@ public class NoteController {
 	 * @return
 	 */
 	@PostMapping("/notes")
-	public ResponseEntity<?> addNote(@Valid @RequestBody NoteModel noteModel,BindingResult bindingResults) {
+	@JsonView(NoteModelView.ViewWithoutId.class)
+	public ResponseEntity<?> addNote(@JsonView(NoteModelView.ViewWithoutId.class) @RequestBody @Valid NoteModel noteModel,BindingResult bindingResults) {
 		Map<String,Object> responseMap = new HashMap<String,Object>();
 		UserInfo userInfo = controllerHelper.getUserDetails();
 		Long userId = controllerHelper.getUserId();
@@ -193,6 +192,7 @@ public class NoteController {
 				responseMap.put(messagePropertyResolver.getMessage("map.key.message", new Object[]{}, Locale.US)
 						,messagePropertyResolver.getMessage("notes.added", new Object[]{}, Locale.US) );
 				responseMap.put(messagePropertyResolver.getMessage("map.key.data", new Object[]{}, Locale.US), noteModel);
+				responseMap.put(messagePropertyResolver.getMessage("map.key.data1", new Object[]{}, Locale.US), noteModel.getId());
 				return new ResponseEntity<Map<String,Object>>(responseMap, HttpStatus.OK);
 			}
 			responseMap.put(messagePropertyResolver.getMessage("map.key.error", new Object[]{}, Locale.US)
@@ -215,25 +215,26 @@ public class NoteController {
 	 * @param bindingResults
 	 * @return
 	 */
-	@PutMapping("/notes")
-	public ResponseEntity<?> updateNote(@Valid @RequestBody NoteModel noteModel,BindingResult bindingResults) {
+	@PutMapping("/notes/{id}")
+	@JsonView(NoteModelView.ViewWithoutId.class)
+	public ResponseEntity<?> updateNote(@PathVariable Long id,@JsonView(NoteModelView.ViewWithoutId.class) @Valid @RequestBody NoteModel noteModel,BindingResult bindingResults) {
 		Map<String,Object> responseMap = new HashMap<String,Object>();
 		UserInfo userInfo = controllerHelper.getUserDetails();
 		Long userId = controllerHelper.getUserId();
 		responseMap.put(messagePropertyResolver.getMessage("map.key.user", new Object[]{}, Locale.US), userInfo.getUserName());
+		responseMap.put(messagePropertyResolver.getMessage("map.key.data1", new Object[]{}, Locale.US), id);
 		try{
 			if(bindingResults.getAllErrors().size() > 0){
 				return controllerHelper.handleValidationException(bindingResults);
 			}
-			NoteModel note = noteService.findById(userId, noteModel.getId());
+			NoteModel note = noteService.findById(userId, id);
 			if (null == note.getId()) {
 				responseMap.put(messagePropertyResolver.getMessage("map.key.error", new Object[]{}, Locale.US), 
 						messagePropertyResolver.getMessage("notes.noupdated", new Object[]{}, Locale.US) 
 						+ " " + messagePropertyResolver.getMessage("notes.noidfound", new Object[]{}, Locale.US));
-				responseMap.put(messagePropertyResolver.getMessage("map.key.data", new Object[]{}, Locale.US), noteModel);
 				return new ResponseEntity<Map<String,Object>>(responseMap, HttpStatus.NOT_FOUND);
 			}
-			noteModel = noteService.updateNote(noteModel.getId(), noteModel.getTitle(), noteModel.getNote());
+			noteModel = noteService.updateNote(id, noteModel.getTitle(), noteModel.getNote());
 			responseMap.put(messagePropertyResolver.getMessage("map.key.message", new Object[]{}, Locale.US), 
 					messagePropertyResolver.getMessage("notes.updated", new Object[]{}, Locale.US));
 			responseMap.put(messagePropertyResolver.getMessage("map.key.data", new Object[]{}, Locale.US), noteModel);
