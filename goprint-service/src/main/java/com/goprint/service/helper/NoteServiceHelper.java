@@ -4,7 +4,11 @@ import org.springframework.stereotype.Component;
 
 import com.goprint.entity.Note;
 import com.goprint.model.NoteModel;
-
+/**
+ * Helper for NoteService
+ * @author vinod Bhatkotti
+ *
+ */
 @Component
 public class NoteServiceHelper {
 	/**

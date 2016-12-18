@@ -13,6 +13,12 @@ import com.goprint.entity.UserDetail;
  *
  */
 public interface UserDetailRepository extends JpaRepository<UserDetail, Long> {
+	/**
+	 * Gets the user details by email and password
+	 * @param userName
+	 * @param password
+	 * @return
+	 */
 	@Query("select u.id from  UserDetail u where u.email = ?1  and u.password = ?2")
 	Long findUser(String userName,String password);
 }
