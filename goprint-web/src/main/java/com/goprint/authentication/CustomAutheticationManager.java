@@ -26,7 +26,7 @@ public class CustomAutheticationManager implements AuthenticationProvider{
 
 		Long id = userService.findById(username, password);
 		if(id == null){
-			throw new BadCredentialsException("User does not exist");
+			throw new BadCredentialsException("Wrong Credentials");
 		}
 		UserInfo userInfo = new UserInfo(id, username);
 		List<GrantedAuthority> grantedAuths = new ArrayList<GrantedAuthority>();

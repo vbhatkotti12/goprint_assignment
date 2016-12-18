@@ -12,7 +12,7 @@
 
 	<context:component-scan base-package="com.goprint" />
 	<import resource="classpath:META-INF/spring-service.xml" />
-	<import resource="applicationContext.xml" />
+	<import resource="securityContext.xml" />
 
 
 	<bean id="contentNegotiationManager"

@@ -28,6 +28,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.goprint.authentication.UserInfo;
 import com.goprint.exception.ServiceException;
+import com.goprint.helper.ControllerHelper;
 import com.goprint.model.NoteModel;
 import com.goprint.service.NotesService;
 import com.goprint.util.MessagePropertyResolver;
@@ -44,6 +45,8 @@ public class NoteController {
 	NotesService noteService;
 	@Autowired
 	MessagePropertyResolver messagePropertyResolver;
+	@Autowired
+	ControllerHelper controllerHelper;
 	/**
 	 * Gets All user Notes
 	 * @return
@@ -51,8 +54,11 @@ public class NoteController {
 	@GetMapping("/notes")
 	public @ResponseBody ResponseEntity<?> getUserNotes() {
 		Map<String,Object> responseMap = new HashMap<String,Object>();
+		UserInfo userInfo = controllerHelper.getUserDetails();
+		Long userId = controllerHelper.getUserId();
+		responseMap.put(messagePropertyResolver.getMessage("map.key.user", new Object[]{}, Locale.US), userInfo.getUserName());
 		try{
-			List<NoteModel> notes = noteService.findByUserId(getUserId());
+			List<NoteModel> notes = noteService.findByUserId(userId);
 			if(notes.isEmpty()){
 				responseMap.put(messagePropertyResolver.getMessage("map.key.message", new Object[]{}, Locale.US), 
 						messagePropertyResolver.getMessage("notes.nofound", new Object[]{}, Locale.US));
@@ -64,8 +70,8 @@ public class NoteController {
 			return new ResponseEntity<Map<String,Object>>(responseMap, HttpStatus.OK);
 		}
 		catch(ServiceException e){
-			logger.error("Error in getUserNode Params -- Userid= "+getUserId(),e);
-			responseMap.put(messagePropertyResolver.getMessage("map.key.error", new Object[]{}, Locale.US),
+			logger.error("Error in getUserNode Params -- Userid= "+userId,e);
+			responseMap.put(messagePropertyResolver.getMessage("map.key.exception", new Object[]{}, Locale.US),
 					messagePropertyResolver.getMessage("notes.error.allnotes", new Object[]{}, Locale.US) );
 			return new ResponseEntity<Map<String,Object>>(responseMap, HttpStatus.EXPECTATION_FAILED);
 		}
@@ -78,11 +84,15 @@ public class NoteController {
 	@GetMapping("/notes/{id}")
 	public @ResponseBody ResponseEntity<?> getUserNote(@PathVariable Long id) {
 		Map<String,Object> responseMap = new HashMap<String,Object>();
+		UserInfo userInfo = controllerHelper.getUserDetails();
+		Long userId = controllerHelper.getUserId();
+		responseMap.put(messagePropertyResolver.getMessage("map.key.user", new Object[]{}, Locale.US), userInfo.getUserName());		
 		try{
-			NoteModel note = noteService.findById(getUserId(), id);
+			NoteModel note = noteService.findById(userId, id);
 			if (null == note.getId()) {
 				responseMap.put(messagePropertyResolver.getMessage("map.key.message", new Object[]{}, Locale.US), 
-						messagePropertyResolver.getMessage("notes.noidfound", new Object[]{id}, Locale.US));
+						messagePropertyResolver.getMessage("notes.noidfound", new Object[]{}, Locale.US));
+				responseMap.put(messagePropertyResolver.getMessage("map.key.data1", new Object[]{}, Locale.US),id);
 				return new ResponseEntity<Map<String,Object>>(responseMap, HttpStatus.NOT_FOUND);			
 			}
 			responseMap.put(messagePropertyResolver.getMessage("map.key.message", new Object[]{}, Locale.US)
@@ -92,20 +102,150 @@ public class NoteController {
 			return new ResponseEntity<Map<String,Object>>(responseMap, HttpStatus.OK);
 		}
 		catch(ServiceException e){
-			logger.error("Error in getUserNode Params -- noteId= "+id+" && Userid= "+getUserId(),e);
-			responseMap.put(messagePropertyResolver.getMessage("map.key.error", new Object[]{}, Locale.US)
-					, messagePropertyResolver.getMessage("notes.error.note", new Object[]{id}, Locale.US));
+			logger.error("Error in getUserNode Params -- noteId= "+id+" && Userid= "+userId,e);
+			responseMap.put(messagePropertyResolver.getMessage("map.key.exception", new Object[]{}, Locale.US)
+					, messagePropertyResolver.getMessage("notes.error.note", new Object[]{}, Locale.US));
+			responseMap.put(messagePropertyResolver.getMessage("map.key.data1", new Object[]{}, Locale.US),id);
 			return new ResponseEntity<Map<String,Object>>(responseMap, HttpStatus.EXPECTATION_FAILED);
 		}
 	}
 	/**
-	 * Get User After Auth
+	 * Delete Note
+	 * @param id
 	 * @return
 	 */
-	private Long getUserId(){
-		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-		UserInfo userInfo = (UserInfo)auth.getPrincipal();
-		return userInfo.getId();
-	}
+	@DeleteMapping("/notes/{id}")
+	public ResponseEntity<?> deleteNote(@PathVariable Long id) {
+		Map<String,Object> responseMap = new HashMap<String,Object>();
+		UserInfo userInfo = controllerHelper.getUserDetails();
+		Long userId = controllerHelper.getUserId();
+		responseMap.put(messagePropertyResolver.getMessage("map.key.user", new Object[]{}, Locale.US), userInfo.getUserName());
+		responseMap.put(messagePropertyResolver.getMessage("map.key.data1", new Object[]{}, Locale.US), id);
+		try{
+			NoteModel note = noteService.findById(userId, id);
+			if (null == note.getId()) {
+				responseMap.put(messagePropertyResolver.getMessage("map.key.error", new Object[]{}, Locale.US), 
+						messagePropertyResolver.getMessage("notes.nodelete", new Object[]{}, Locale.US) 
+						+ " " +messagePropertyResolver.getMessage("notes.noidfound", new Object[]{}, Locale.US));
+				return new ResponseEntity<Map<String,Object>>(responseMap, HttpStatus.NOT_FOUND);
+			}			
+			boolean isDelete = noteService.remove(id);
+			responseMap.put(messagePropertyResolver.getMessage("map.key.message", new Object[]{}, Locale.US),messagePropertyResolver.getMessage("notes.deleted", new Object[]{userInfo.getUserName()}, Locale.US) );
+			
+			return new ResponseEntity<Map<String,Object>>(responseMap, HttpStatus.OK);
+		}
+		catch(ServiceException e){
+			logger.error("Error in deleteNote Params -- noteId= "+id+" && Userid= "+userId,e);
+			responseMap.put(messagePropertyResolver.getMessage("map.key.exception", new Object[]{}, Locale.US)
+					, messagePropertyResolver.getMessage("notes.error.delete", new Object[]{}, Locale.US));
+			return new ResponseEntity<Map<String,Object>>(responseMap, HttpStatus.EXPECTATION_FAILED);
+		}
 
+	}
+	/**
+	 * Deletes All User Notes
+	 * @return
+	 */
+	@DeleteMapping("/notes")
+	public ResponseEntity<?> deleteAllNote() {
+		Map<String,Object> responseMap = new HashMap<String,Object>();
+		UserInfo userInfo = controllerHelper.getUserDetails();
+		Long userId = userInfo.getId();
+		responseMap.put(messagePropertyResolver.getMessage("map.key.user", new Object[]{}, Locale.US), userInfo.getUserName());
+		try{
+			List<NoteModel> notes = noteService.findByUserId(userId);
+			if(notes.isEmpty()){
+				responseMap.put(messagePropertyResolver.getMessage("map.key.error", new Object[]{}, Locale.US), 
+						messagePropertyResolver.getMessage("notes.nofound", new Object[]{}, Locale.US));
+				return new ResponseEntity<Map<String,Object>>(responseMap, HttpStatus.NOT_FOUND);
+			}
+			boolean isDelete = noteService.removeAll(userId);
+			responseMap.put(messagePropertyResolver.getMessage("map.key.message", new Object[]{}, Locale.US)
+					, messagePropertyResolver.getMessage("notes.alldeleted", new Object[]{}, Locale.US));
+			return new ResponseEntity<Map<String,Object>>(responseMap, HttpStatus.OK);
+		}
+		catch(ServiceException e){
+			logger.error("Error in deleteAllNote Params -- Userid= "+userId,e);
+			responseMap.put(messagePropertyResolver.getMessage("map.key.exception", new Object[]{}, Locale.US)
+					,messagePropertyResolver.getMessage("notes.error.alldelete", new Object[]{}, Locale.US) );
+			return new ResponseEntity<Map<String,Object>>(responseMap, HttpStatus.EXPECTATION_FAILED);
+		}
+
+	}
+	/**
+	 * Add Note to User
+	 * @param noteModel
+	 * @param bindingResults
+	 * @return
+	 */
+	@PostMapping("/notes")
+	public ResponseEntity<?> addNote(@Valid @RequestBody NoteModel noteModel,BindingResult bindingResults) {
+		Map<String,Object> responseMap = new HashMap<String,Object>();
+		UserInfo userInfo = controllerHelper.getUserDetails();
+		Long userId = controllerHelper.getUserId();
+		responseMap.put(messagePropertyResolver.getMessage("map.key.user", new Object[]{}, Locale.US), userInfo.getUserName());
+		try{
+			if(bindingResults.getAllErrors().size() > 0){				
+				return controllerHelper.handleValidationException(bindingResults);
+			}
+			noteModel = noteService.addNote(userId, noteModel.getTitle(), noteModel.getNote());
+			if (null != noteModel.getId()) {
+				responseMap.put(messagePropertyResolver.getMessage("map.key.message", new Object[]{}, Locale.US)
+						,messagePropertyResolver.getMessage("notes.added", new Object[]{}, Locale.US) );
+				responseMap.put(messagePropertyResolver.getMessage("map.key.data", new Object[]{}, Locale.US), noteModel);
+				return new ResponseEntity<Map<String,Object>>(responseMap, HttpStatus.OK);
+			}
+			responseMap.put(messagePropertyResolver.getMessage("map.key.error", new Object[]{}, Locale.US)
+					,messagePropertyResolver.getMessage("notes.noadded", new Object[]{}, Locale.US) );
+			responseMap.put(messagePropertyResolver.getMessage("map.key.data", new Object[]{}, Locale.US),noteModel);
+			return new ResponseEntity<Map<String,Object>>(responseMap, HttpStatus.EXPECTATION_FAILED);
+		}
+		catch(ServiceException e){
+			responseMap.put(messagePropertyResolver.getMessage("map.key.exception", new Object[]{}, Locale.US),
+					messagePropertyResolver.getMessage("notes.error.add", new Object[]{}, Locale.US) );
+			responseMap.put(messagePropertyResolver.getMessage("map.key.data", new Object[]{}, Locale.US),noteModel);
+			logger.error("Error in addNote Params -- NoteModel= "+noteModel+" && Userid= "+userId,e);
+			return new ResponseEntity<Map<String,Object>>(responseMap, HttpStatus.EXPECTATION_FAILED);
+		}
+
+	}
+	/**
+	 * Updates Note By User
+	 * @param noteModel
+	 * @param bindingResults
+	 * @return
+	 */
+	@PutMapping("/notes")
+	public ResponseEntity<?> updateNote(@Valid @RequestBody NoteModel noteModel,BindingResult bindingResults) {
+		Map<String,Object> responseMap = new HashMap<String,Object>();
+		UserInfo userInfo = controllerHelper.getUserDetails();
+		Long userId = controllerHelper.getUserId();
+		responseMap.put(messagePropertyResolver.getMessage("map.key.user", new Object[]{}, Locale.US), userInfo.getUserName());
+		try{
+			if(bindingResults.getAllErrors().size() > 0){
+				return controllerHelper.handleValidationException(bindingResults);
+			}
+			NoteModel note = noteService.findById(userId, noteModel.getId());
+			if (null == note.getId()) {
+				responseMap.put(messagePropertyResolver.getMessage("map.key.error", new Object[]{}, Locale.US), 
+						messagePropertyResolver.getMessage("notes.noupdated", new Object[]{}, Locale.US) 
+						+ " " + messagePropertyResolver.getMessage("notes.noidfound", new Object[]{}, Locale.US));
+				responseMap.put(messagePropertyResolver.getMessage("map.key.data", new Object[]{}, Locale.US), noteModel);
+				return new ResponseEntity<Map<String,Object>>(responseMap, HttpStatus.NOT_FOUND);
+			}
+			noteModel = noteService.updateNote(noteModel.getId(), noteModel.getTitle(), noteModel.getNote());
+			responseMap.put(messagePropertyResolver.getMessage("map.key.message", new Object[]{}, Locale.US), 
+					messagePropertyResolver.getMessage("notes.updated", new Object[]{}, Locale.US));
+			responseMap.put(messagePropertyResolver.getMessage("map.key.data", new Object[]{}, Locale.US), noteModel);
+			return new ResponseEntity<Map<String,Object>>(responseMap, HttpStatus.OK);
+		}
+		catch(ServiceException e){
+			responseMap.put(messagePropertyResolver.getMessage("map.key.exception", new Object[]{}, Locale.US), 
+					messagePropertyResolver.getMessage("notes.error.update", new Object[]{}, Locale.US));
+			responseMap.put(messagePropertyResolver.getMessage("map.key.data", new Object[]{}, Locale.US),noteModel);
+			logger.error("Error in updateNote Params -- NoteModel= "+noteModel+" && Userid= "+userId,e);
+			return new ResponseEntity<	Map<String,Object>>(responseMap, HttpStatus.EXPECTATION_FAILED);
+		}
+	}
+	
 }
