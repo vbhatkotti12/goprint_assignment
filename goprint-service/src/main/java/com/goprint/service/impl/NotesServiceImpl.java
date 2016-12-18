@@ -20,6 +20,7 @@ import com.goprint.model.NoteModel;
 import com.goprint.repository.NotesRespository;
 import com.goprint.service.NotesService;
 import com.goprint.service.UserDetailService;
+import com.goprint.service.helper.NoteServiceHelper;
 
 /**
  * Service Implementation for Note Operations
@@ -35,6 +36,9 @@ public class NotesServiceImpl implements NotesService {
 
 	@Resource
 	private NotesRespository notesRespository;
+	
+	@Autowired
+	private NoteServiceHelper notesServiceHelper;
 
 	/**
 	 * Finds the Note By Id
@@ -48,7 +52,7 @@ public class NotesServiceImpl implements NotesService {
 			logger.debug("Executes Find By Id -- Params:-" +noteId);
 			Note note =  notesRespository.findNote(userId,noteId);
 			logger.debug("Returns Note Object");
-			return convertNoteToNoteModel(note);
+			return notesServiceHelper.convertNoteToNoteModel(note);
 		}
 		catch(DataAccessException e){
 			logger.error("Error in findById",e);
@@ -69,7 +73,7 @@ public class NotesServiceImpl implements NotesService {
 			logger.debug("Executes findByUserId --- Params:-" +id);
 			List<Note> notes = notesRespository.getByUserId(id);			
 			for(Note note : notes){				
-				noteModels.add(convertNoteToNoteModel(note));
+				noteModels.add(notesServiceHelper.convertNoteToNoteModel(note));
 			}
 			return noteModels;
 		}
@@ -78,14 +82,90 @@ public class NotesServiceImpl implements NotesService {
 			throw new ServiceException(e);
 		}
 	}
-	
-	private NoteModel convertNoteToNoteModel(Note note){
-		NoteModel noteModel = new NoteModel();
-		if(note != null){
-			noteModel.setId(note.getId());
-			noteModel.setTitle(note.getTitle());
-			noteModel.setNote(note.getNote());
+	/**
+	 * Add the Note of User
+	 * @param userId
+	 * @param title
+	 * @param note
+	 * @return
+	 * @throws ServiceException
+	 */
+	@Transactional
+	public NoteModel addNote(Long userId,String title,String note) throws ServiceException {
+		try{
+			logger.debug("Executes addNote(userId,title,note) --- Params:-" +userId+", "+title+ ", "+note);
+			UserDetail userDetail =  new UserDetail();	
+			userDetail.setId(userId);
+			Note noteObj = new Note();
+			notesServiceHelper.setInfo(title, note,noteObj);
+			noteObj.setUserId(userDetail);
+			noteObj.setCreateTime(new Date());
+			noteObj = notesRespository.save(noteObj);
+			return notesServiceHelper.convertNoteToNoteModel(noteObj);
 		}
-		return noteModel;
+		catch(DataAccessException e){
+			logger.error("Error in addNote",e);
+			throw new ServiceException(e);
+		}
 	}
+	/**
+	 * Update Note of User By NoteId
+	 * @param id
+	 * @param title
+	 * @param note
+	 * @return
+	 * @throws ServiceException
+	 */
+	@Transactional
+	public NoteModel updateNote(Long id,String title,String note) throws ServiceException {
+		try{
+			Note noteDb =  notesRespository.findOne(id);		 
+			notesServiceHelper.setInfo(title, note,noteDb);
+			noteDb.setUpdateTime(new Date());
+			noteDb = notesRespository.save(noteDb);
+			return notesServiceHelper.convertNoteToNoteModel(noteDb);
+		}
+		catch(DataAccessException e){
+			logger.error("Error in updateNote",e);
+			throw new ServiceException(e);
+		}
+	}
+	/**
+	 * Remove All Notes of the User
+	 * @param userId
+	 * @return
+	 * @throws ServiceException
+	 */
+	@Transactional
+	public boolean removeAll(Long userId) throws ServiceException {		
+		logger.debug("Executes RemoveAll By UserId :-"+userId);
+		try{
+			notesRespository.deleteByUserId(userId);
+			return true;
+		}
+		catch(DataAccessException e){
+			logger.error("Error in removeAll",e);
+			throw new ServiceException(e);
+		}
+
+	}
+	/**
+	 * Remove Note by NoteId
+	 * @param noteId
+	 * @return
+	 * @throws ServiceException
+	 */
+	@Transactional
+	public boolean remove(Long noteId) throws ServiceException{		
+		try{
+			notesRespository.delete(noteId);
+			return true;
+		}
+		catch(DataAccessException e){
+			logger.error("Error in remove",e);
+			throw new ServiceException(e);
+		}
+
+	}
+	
 }

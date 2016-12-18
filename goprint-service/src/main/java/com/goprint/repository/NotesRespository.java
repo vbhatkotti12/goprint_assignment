@@ -16,6 +16,20 @@ import com.goprint.entity.Note;
  */
 public interface NotesRespository extends JpaRepository<Note, Long> {
 	/**
+	 * Deletes note by id
+	 */
+	@Modifying
+	@Query("delete from Note where id = ?1")
+	void delete(Long entityId);
+	/**
+	 * Deletes all notes of User
+	 * @param entityId
+	 */
+	@Modifying
+	@Query("delete from Note n where n.userId.id = ?1")
+	@Transactional
+	void deleteByUserId(Long entityId);
+	/**
 	 * Gets all notes of User
 	 * @param entityId
 	 * @return
