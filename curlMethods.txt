@@ -1,0 +1,23 @@
+Get ALL Notes of user :-
+
+curl -X GET -H "Content-Type: application/json" -u user1@yopmail.com:password1$ "http://localhost:8080/goprint-web/notes/"
+
+Get specific note of user :- 
+
+curl -X GET -H "Content-Type: application/json" -u user1@yopmail.com:password1$ "http://localhost:8080/goprint-web/notes/11"
+
+Add Note of user   :- 
+
+curl -X POST -H "Content-Type: application/json" -d "{\"title\": \"add note\",\"note\": \"Professional1\"}" -u user1@yopmail.com:password1$ "http://localhost:8080/goprint-web/notes"
+
+Update Note of user   :- 
+
+curl -X PUT -H "Content-Type: application/json" -d "{\"title\": \"updated note\",\"note\": \"Professional1\"}" -u user1@yopmail.com:password1$ "http://localhost:8080/goprint-web/notes/22"
+
+Delete specific note of user
+
+curl -X DELETE -H "Content-Type: application/json" -u user1@yopmail.com:password1$ "http://localhost:8080/goprint-web/notes/15"
+
+Delete all notes of user
+
+curl -X DELETE -H "Content-Type: application/json" -u user1@yopmail.com:password1$ "http://localhost:8080/goprint-web/notes"
