@@ -5,7 +5,7 @@ Developed With:- Java 1.8,Eclipse Mars.2 Release,Apache Tomcat 8.0
 
 1) Run goprint_master.sql in mysql
 2) Change Database configurations in File :-  goprint-service\src\main\resources\META-INF\db-config.properties
-3) Run from cmd 'mvn clean install' from inside goprint-aggregator project(where pom exists) 
+3) Run maven command 'mvn clean install' to package with test cases or 'mvn clean install -DskipTests' to skipped test cases from inside goprint-aggregator project(where pom exists) 
 
 
 #Demonstrating Rest API
